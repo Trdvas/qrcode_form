@@ -10,7 +10,7 @@
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background-color: #f8f9fa;
+      background-color: #f58177;
       color: #333;
     }
     .navbar {
@@ -108,11 +108,11 @@
       <form id="contactForm">
         <div class="mb-3">
           <label for="nome" class="form-label">Nome:</label>
-          <input type="text" class="form-control" id="nome" name="nome" required>
+          <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome e Sobrenome" required>
         </div>
         <div class="mb-3">
           <label for="contato" class="form-label">Contato:</label>
-          <input type="text" class="form-control" id="contato" name="contato" required>
+          <input type="text" class="form-control" id="contato" name="contato" placeholder="(DDD) - 99999-9999" required>
         </div>
         <button type="submit" class="btn btn-primary">Enviar</button>
       </form>
@@ -136,9 +136,18 @@
       const nome = document.getElementById('nome').value;
       const contato = document.getElementById('contato').value;
 
+      // Remove caracteres não numéricos do telefone
+      const contatoLimpo = contato.replace(/\D/g, '');
+
+      // Valida o número de telefone
+      if (contatoLimpo.length < 11) {
+        alert('Por favor, insira um número de telefone válido.');
+        return;
+      }
+
       const data = {
         nome: nome,
-        contato: contato
+        contato: contatoLimpo // Envia o número limpo
       };
 
       fetch('https://ficaf4cil.app.n8n.cloud/webhook-test/entrada-fila', {
