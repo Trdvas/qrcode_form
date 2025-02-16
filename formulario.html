@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Contato</title>
+</head>
+<body>
+    <h1>Formulário de Contato</h1>
+    <form id="contactForm">
+        <label for="nome">Nome:</label><br>
+        <input type="text" id="nome" name="nome" required><br><br>
+        <label for="contato">Contato:</label><br>
+        <input type="text" id="contato" name="contato" required><br><br>
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const nome = document.getElementById('nome').value;
+            const contato = document.getElementById('contato').value;
+
+            const data = {
+                nome: nome,
+                contato: contato
+            };
+
+            fetch('https://ficaf4cil.app.n8n.cloud/webhook-test/entrada-fila', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Sucesso:', data);
+                alert('Dados enviados com sucesso!');
+            })
+            .catch((error) => {
+                console.error('Erro:', error);
+                alert('Erro ao enviar dados.');
+            });
+        });
+    </script>
+</body>
+</html>     
