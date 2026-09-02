@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, type LucideIcon } from "lucide-react";
+import { Building2, CreditCard, type LucideIcon } from "lucide-react";
 
 const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/admin/negocios", label: "Negócios", icon: Building2 },
+  { href: "/admin/negocios", label: "Painel de Negócios", icon: Building2 },
+  { href: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard },
 ];
 
 export default function AdminSidebarNav() {
@@ -20,8 +21,8 @@ export default function AdminSidebarNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-              ativo ? "bg-slate-800 text-white" : "text-slate-300 hover:bg-slate-800/60"
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              ativo ? "bg-brand-50 text-brand-600" : "text-slate-500 hover:bg-slate-100"
             }`}
           >
             <Icon className="h-4 w-4" strokeWidth={2} />

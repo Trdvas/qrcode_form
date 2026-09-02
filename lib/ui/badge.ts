@@ -5,10 +5,10 @@
 export type BadgeTone = "success" | "neutral" | "danger" | "info";
 
 const TONE_CLASSES: Record<BadgeTone, string> = {
-  success: "badge bg-green-100 text-green-700",
-  neutral: "badge bg-slate-100 text-slate-600",
-  danger: "badge bg-red-100 text-red-700",
-  info: "badge bg-brand-100 text-brand-700",
+  success: "badge bg-green-50 text-green-600",
+  neutral: "badge bg-slate-100 text-slate-500",
+  danger: "badge bg-red-50 text-red-600",
+  info: "badge bg-brand-50 text-brand-600",
 };
 
 export function badgeClass(tone: BadgeTone): string {

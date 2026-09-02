@@ -24,7 +24,7 @@ export default function NovoServicoForm() {
     return (
       <button className="btn-primary" onClick={() => setAberto(true)}>
         <Plus className="h-4 w-4" strokeWidth={2} />
-        Novo serviço
+        Adicionar serviço
       </button>
     );
   }

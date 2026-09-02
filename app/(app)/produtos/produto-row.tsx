@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { Produto } from "@/types/database";
 import { atualizarProduto, removerProduto } from "./actions";
 
@@ -79,19 +80,23 @@ export default function ProdutoRow({ produto }: { produto: Produto }) {
       <td className="px-4 py-3 text-sm text-slate-700">{produto.especificacao}</td>
       <td className="px-4 py-3 text-sm text-slate-700">{formatBRL(produto.preco_litro)}</td>
       <td className="px-4 py-3 text-right text-sm">
-        <button
-          onClick={() => setEditando(true)}
-          className="mr-3 font-medium text-brand-600 hover:underline"
-        >
-          Editar
-        </button>
-        <button
-          onClick={handleRemover}
-          disabled={pending}
-          className="font-medium text-red-600 hover:underline disabled:opacity-50"
-        >
-          Remover
-        </button>
+        <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={() => setEditando(true)}
+            aria-label="Editar"
+            className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-brand-50 hover:text-brand-600"
+          >
+            <Pencil className="h-4 w-4" strokeWidth={2} />
+          </button>
+          <button
+            onClick={handleRemover}
+            disabled={pending}
+            aria-label="Remover"
+            className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" strokeWidth={2} />
+          </button>
+        </div>
       </td>
     </tr>
   );

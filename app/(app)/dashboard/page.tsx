@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar, DollarSign, Package, Wrench } from "lucide-react";
+import { Calendar, FileText, ArrowRight, Package } from "lucide-react";
 import { requireNegocioContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
         <p className="text-sm text-slate-500">Resumo da operação de hoje</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="card flex items-start justify-between bg-brand-50 p-5">
           <div>
             <p className="text-sm text-slate-500">Agendamentos hoje</p>
@@ -76,20 +76,21 @@ export default async function DashboardPage() {
             <p className="mt-2 text-3xl font-bold text-green-600">{orcamentosRecentes ?? 0}</p>
           </div>
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-green-600">
-            <DollarSign className="h-5 w-5" strokeWidth={2} />
+            <FileText className="h-5 w-5" strokeWidth={2} />
           </span>
         </div>
-        <div className="card flex flex-col justify-center gap-2 p-5">
-          <Link href="/produtos" className="btn-primary w-full justify-start">
-            <Package className="h-4 w-4" strokeWidth={2} />
-            Gerenciar produtos
-          </Link>
-          <Link href="/servicos" className="btn-primary w-full justify-start">
-            <Wrench className="h-4 w-4" strokeWidth={2} />
-            Gerenciar serviços
-          </Link>
-        </div>
       </div>
+
+      <Link
+        href="/produtos"
+        className="btn-primary h-14 w-full justify-between px-6 text-base font-semibold"
+      >
+        <span className="flex items-center gap-3">
+          <Package className="h-5 w-5" strokeWidth={2} />
+          Gerenciar Produtos e Serviços
+        </span>
+        <ArrowRight className="h-5 w-5" strokeWidth={2} />
+      </Link>
 
       <div className="card">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
@@ -108,7 +109,7 @@ export default async function DashboardPage() {
               <li key={ag.id} className="flex items-center justify-between px-5 py-3 text-sm">
                 <div>
                   <p className="font-medium text-slate-900">{ag.veiculo || "Veículo não informado"}</p>
-                  <p className="text-slate-500">
+                  <p className="font-medium text-brand-600">
                     {new Date(ag.data_hora_inicio).toLocaleString("pt-BR", {
                       dateStyle: "short",
                       timeStyle: "short",
