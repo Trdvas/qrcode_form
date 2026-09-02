@@ -3,12 +3,19 @@ import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
 import { badgeClass, statusAgendamentoTone } from "@/lib/ui/badge";
 
-const STATUS_OPTIONS = [
-  { value: "", label: "Todos os status" },
+const STATUS_FILTROS = [
+  { value: "", label: "Todos" },
   { value: "confirmado", label: "Confirmado" },
-  { value: "concluido", label: "Concluído" },
   { value: "cancelado", label: "Cancelado" },
 ];
+
+function buildHref(status: string, data: string) {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (data) params.set("data", data);
+  const qs = params.toString();
+  return qs ? `/agendamentos?${qs}` : "/agendamentos";
+}
 
 export default async function AgendamentosPage({
   searchParams,
@@ -43,30 +50,44 @@ export default async function AgendamentosPage({
         <p className="text-sm text-slate-500">Agendamentos criados pelo agente de IA no WhatsApp</p>
       </div>
 
-      <form method="get" className="card flex flex-wrap items-end gap-3 p-4">
+      <div className="card flex flex-wrap items-end gap-6 p-4">
         <div>
-          <label className="label">Status</label>
-          <select name="status" defaultValue={status} className="input">
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+          <p className="label">Status</p>
+          <div className="inline-flex gap-1 rounded-lg bg-slate-100 p-1">
+            {STATUS_FILTROS.map((opt) => (
+              <a
+                key={opt.value}
+                href={buildHref(opt.value, data)}
+                className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+                  status === opt.value
+                    ? "bg-white text-brand-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
                 {opt.label}
-              </option>
+              </a>
             ))}
-          </select>
+          </div>
         </div>
-        <div>
-          <label className="label">Data</label>
-          <input type="date" name="data" defaultValue={data} className="input" />
-        </div>
-        <button type="submit" className="btn-primary">
-          Filtrar
-        </button>
-        {(status || data) && (
-          <a href="/agendamentos" className="btn-secondary">
-            Limpar filtros
-          </a>
-        )}
-      </form>
+
+        <form method="get" className="flex items-end gap-3">
+          {status && <input type="hidden" name="status" value={status} />}
+          <div>
+            <label className="label" htmlFor="data">
+              Data
+            </label>
+            <input id="data" type="date" name="data" defaultValue={data} className="input" />
+          </div>
+          <button type="submit" className="btn-primary">
+            Filtrar
+          </button>
+          {(status || data) && (
+            <a href="/agendamentos" className="btn-secondary">
+              Limpar filtros
+            </a>
+          )}
+        </form>
+      </div>
 
       {error && <p className="text-sm text-red-600">{error.message}</p>}
 
@@ -87,13 +108,13 @@ export default async function AgendamentosPage({
                 <td className="px-4 py-3 text-sm font-medium text-slate-900">
                   {ag.veiculo || "—"}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-700">
+                <td className="px-4 py-3 text-sm font-medium text-brand-600">
                   {new Date(ag.data_hora_inicio).toLocaleString("pt-BR", {
                     dateStyle: "short",
                     timeStyle: "short",
                   })}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-700">
+                <td className="px-4 py-3 text-sm font-medium text-brand-600">
                   {new Date(ag.data_hora_fim).toLocaleString("pt-BR", {
                     dateStyle: "short",
                     timeStyle: "short",

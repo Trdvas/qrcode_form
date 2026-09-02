@@ -1,6 +1,7 @@
 import { requireNegocioContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Servico } from "@/types/database";
+import ProdutosServicosTabs from "../produtos-servicos-tabs";
 import ServicoRow from "./servico-row";
 import NovoServicoForm from "./novo-servico-form";
 
@@ -16,11 +17,13 @@ export default async function ServicosPage() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Produtos e Serviços</h1>
+        <p className="text-sm text-slate-500">Mão de obra oferecida pela oficina</p>
+      </div>
+
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Serviços</h1>
-          <p className="text-sm text-slate-500">Mão de obra oferecida pela oficina</p>
-        </div>
+        <ProdutosServicosTabs ativa="servicos" />
         <NovoServicoForm />
       </div>
 

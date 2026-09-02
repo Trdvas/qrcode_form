@@ -1,5 +1,7 @@
+import { Wrench } from "lucide-react";
 import { requireAdmin } from "@/lib/supabase/context";
 import { signOut } from "@/app/auth/actions";
+import { nomeFromEmail, iniciaisFromEmail } from "@/lib/ui/user-display";
 import AdminSidebarNav from "./sidebar-nav";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -7,11 +9,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen">
-      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-slate-900 text-white sm:block">
-        <div className="px-5 py-5">
-          <p className="text-lg font-bold">Painel de Gestão</p>
-          <p className="mt-0.5 text-xs text-slate-400">Administração da plataforma</p>
+      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white sm:flex sm:flex-col">
+        <div className="flex items-center gap-2.5 px-5 py-5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
+            <Wrench className="h-4 w-4" strokeWidth={2} />
+          </span>
+          <span className="text-[15px] font-bold text-slate-900">Painel de Gestão</span>
         </div>
+        <p className="px-8 pb-5 text-xs text-slate-500">Administrador da plataforma</p>
         <AdminSidebarNav />
       </aside>
 
@@ -19,7 +24,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
           <p className="text-sm font-semibold text-slate-900 sm:hidden">Admin</p>
           <div className="ml-auto flex items-center gap-3">
-            <span className="hidden text-sm text-slate-500 sm:inline">{ctx.email}</span>
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500">
+                {iniciaisFromEmail(ctx.email)}
+              </span>
+              <div className="hidden leading-tight sm:block">
+                <p className="text-sm font-medium text-slate-900">{nomeFromEmail(ctx.email)}</p>
+                <p className="text-xs text-slate-500">Admin da plataforma</p>
+              </div>
+            </div>
             <form action={signOut}>
               <button type="submit" className="btn-secondary">
                 Sair
