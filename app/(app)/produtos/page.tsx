@@ -18,8 +18,8 @@ export default async function ProdutosPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Produtos</h1>
-          <p className="text-sm text-gray-500">Óleos e produtos usados nos orçamentos do agente</p>
+          <h1 className="text-2xl font-bold text-slate-900">Produtos</h1>
+          <p className="text-sm text-slate-500">Óleos e produtos usados nos orçamentos do agente</p>
         </div>
         <NovoProdutoForm />
       </div>
@@ -29,7 +29,7 @@ export default async function ProdutosPage() {
       <div className="card overflow-x-auto">
         <table className="w-full min-w-[560px]">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
               <th className="px-4 py-3">Marca</th>
               <th className="px-4 py-3">Especificação</th>
               <th className="px-4 py-3">Preço/litro</th>
@@ -43,7 +43,7 @@ export default async function ProdutosPage() {
           </tbody>
         </table>
         {(!produtos || produtos.length === 0) && (
-          <p className="px-4 py-8 text-center text-sm text-gray-500">
+          <p className="px-4 py-8 text-center text-sm text-slate-500">
             Nenhum produto cadastrado ainda.
           </p>
         )}

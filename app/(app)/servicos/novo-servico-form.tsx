@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import { criarServico } from "./actions";
 
 export default function NovoServicoForm() {
@@ -22,7 +23,8 @@ export default function NovoServicoForm() {
   if (!aberto) {
     return (
       <button className="btn-primary" onClick={() => setAberto(true)}>
-        + Novo serviço
+        <Plus className="h-4 w-4" strokeWidth={2} />
+        Novo serviço
       </button>
     );
   }

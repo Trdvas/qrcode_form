@@ -1,6 +1,7 @@
 import { requireNegocioContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
+import { badgeClass, statusAgendamentoTone } from "@/lib/ui/badge";
 
 const STATUS_OPTIONS = [
   { value: "", label: "Todos os status" },
@@ -8,12 +9,6 @@ const STATUS_OPTIONS = [
   { value: "concluido", label: "Concluído" },
   { value: "cancelado", label: "Cancelado" },
 ];
-
-const STATUS_BADGE: Record<string, string> = {
-  confirmado: "bg-green-100 text-green-700",
-  concluido: "bg-blue-100 text-blue-700",
-  cancelado: "bg-red-100 text-red-700",
-};
 
 export default async function AgendamentosPage({
   searchParams,
@@ -44,8 +39,8 @@ export default async function AgendamentosPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Agendamentos</h1>
-        <p className="text-sm text-gray-500">Agendamentos criados pelo agente de IA no WhatsApp</p>
+        <h1 className="text-2xl font-bold text-slate-900">Agendamentos</h1>
+        <p className="text-sm text-slate-500">Agendamentos criados pelo agente de IA no WhatsApp</p>
       </div>
 
       <form method="get" className="card flex flex-wrap items-end gap-3 p-4">
@@ -78,7 +73,7 @@ export default async function AgendamentosPage({
       <div className="card overflow-x-auto">
         <table className="w-full min-w-[560px]">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
               <th className="px-4 py-3">Veículo</th>
               <th className="px-4 py-3">Início</th>
               <th className="px-4 py-3">Fim</th>
@@ -88,34 +83,32 @@ export default async function AgendamentosPage({
           </thead>
           <tbody>
             {(agendamentos as Agendamento[] | null)?.map((ag) => (
-              <tr key={ag.id} className="border-b border-gray-100">
-                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+              <tr key={ag.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
+                <td className="px-4 py-3 text-sm font-medium text-slate-900">
                   {ag.veiculo || "—"}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-700">
+                <td className="px-4 py-3 text-sm text-slate-700">
                   {new Date(ag.data_hora_inicio).toLocaleString("pt-BR", {
                     dateStyle: "short",
                     timeStyle: "short",
                   })}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-700">
+                <td className="px-4 py-3 text-sm text-slate-700">
                   {new Date(ag.data_hora_fim).toLocaleString("pt-BR", {
                     dateStyle: "short",
                     timeStyle: "short",
                   })}
                 </td>
                 <td className="px-4 py-3 text-sm">
-                  <span className={`badge ${STATUS_BADGE[ag.status] ?? "bg-gray-100 text-gray-600"}`}>
-                    {ag.status}
-                  </span>
+                  <span className={badgeClass(statusAgendamentoTone(ag.status))}>{ag.status}</span>
                 </td>
-                <td className="px-4 py-3 text-xs text-gray-400">{ag.session_id}</td>
+                <td className="px-4 py-3 text-xs text-slate-400">{ag.session_id}</td>
               </tr>
             ))}
           </tbody>
         </table>
         {(!agendamentos || agendamentos.length === 0) && (
-          <p className="px-4 py-8 text-center text-sm text-gray-500">
+          <p className="px-4 py-8 text-center text-sm text-slate-500">
             Nenhum agendamento encontrado para os filtros selecionados.
           </p>
         )}

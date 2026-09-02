@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Calendar, DollarSign, Package, Wrench } from "lucide-react";
 import { requireNegocioContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
+import { badgeClass, statusAgendamentoTone } from "@/lib/ui/badge";
 
 function inicioDoDia() {
   const d = new Date();
@@ -54,54 +56,66 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500">Resumo da operação de hoje</p>
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+        <p className="text-sm text-slate-500">Resumo da operação de hoje</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="card p-5">
-          <p className="text-sm text-gray-500">Agendamentos hoje</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{agendamentosHoje ?? 0}</p>
+        <div className="card flex items-start justify-between bg-brand-50 p-5">
+          <div>
+            <p className="text-sm text-slate-500">Agendamentos hoje</p>
+            <p className="mt-2 text-3xl font-bold text-brand-600">{agendamentosHoje ?? 0}</p>
+          </div>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand-600">
+            <Calendar className="h-5 w-5" strokeWidth={2} />
+          </span>
         </div>
-        <div className="card p-5">
-          <p className="text-sm text-gray-500">Orçamentos enviados (7 dias)</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{orcamentosRecentes ?? 0}</p>
+        <div className="card flex items-start justify-between bg-green-50 p-5">
+          <div>
+            <p className="text-sm text-slate-500">Orçamentos enviados (7 dias)</p>
+            <p className="mt-2 text-3xl font-bold text-green-600">{orcamentosRecentes ?? 0}</p>
+          </div>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-green-600">
+            <DollarSign className="h-5 w-5" strokeWidth={2} />
+          </span>
         </div>
         <div className="card flex flex-col justify-center gap-2 p-5">
-          <Link href="/produtos" className="btn-secondary w-full justify-start">
+          <Link href="/produtos" className="btn-primary w-full justify-start">
+            <Package className="h-4 w-4" strokeWidth={2} />
             Gerenciar produtos
           </Link>
-          <Link href="/servicos" className="btn-secondary w-full justify-start">
+          <Link href="/servicos" className="btn-primary w-full justify-start">
+            <Wrench className="h-4 w-4" strokeWidth={2} />
             Gerenciar serviços
           </Link>
         </div>
       </div>
 
       <div className="card">
-        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-3">
-          <h2 className="font-semibold text-gray-900">Próximos agendamentos confirmados</h2>
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+          <h2 className="font-semibold text-slate-900">Próximos agendamentos confirmados</h2>
           <Link href="/agendamentos" className="text-sm font-medium text-brand-600 hover:underline">
             Ver todos
           </Link>
         </div>
         {!proximosAgendamentos || proximosAgendamentos.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-gray-500">
+          <p className="px-5 py-8 text-center text-sm text-slate-500">
             Nenhum agendamento confirmado nos próximos dias.
           </p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-slate-100">
             {proximosAgendamentos.map((ag) => (
               <li key={ag.id} className="flex items-center justify-between px-5 py-3 text-sm">
                 <div>
-                  <p className="font-medium text-gray-900">{ag.veiculo || "Veículo não informado"}</p>
-                  <p className="text-gray-500">
+                  <p className="font-medium text-slate-900">{ag.veiculo || "Veículo não informado"}</p>
+                  <p className="text-slate-500">
                     {new Date(ag.data_hora_inicio).toLocaleString("pt-BR", {
                       dateStyle: "short",
                       timeStyle: "short",
                     })}
                   </p>
                 </div>
-                <span className="badge bg-green-100 text-green-700">{ag.status}</span>
+                <span className={badgeClass(statusAgendamentoTone(ag.status))}>{ag.status}</span>
               </li>
             ))}
           </ul>

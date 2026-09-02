@@ -7,8 +7,8 @@ export default async function NovoNegocioPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Novo negócio</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-slate-900">Novo negócio</h1>
+        <p className="text-sm text-slate-500">
           Ao salvar, um e-mail de boas-vindas é enviado automaticamente para o e-mail de contato.
         </p>
       </div>
