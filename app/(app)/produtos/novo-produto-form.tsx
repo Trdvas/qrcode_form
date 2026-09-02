@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import { criarProduto } from "./actions";
 
 export default function NovoProdutoForm() {
@@ -22,7 +23,8 @@ export default function NovoProdutoForm() {
   if (!aberto) {
     return (
       <button className="btn-primary" onClick={() => setAberto(true)}>
-        + Novo produto
+        <Plus className="h-4 w-4" strokeWidth={2} />
+        Novo produto
       </button>
     );
   }

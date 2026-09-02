@@ -1,14 +1,9 @@
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Negocio } from "@/types/database";
-
-const STATUS_BADGE: Record<string, string> = {
-  ativo: "bg-green-100 text-green-700",
-  trial: "bg-amber-100 text-amber-700",
-  inadimplente: "bg-red-100 text-red-700",
-  cancelado: "bg-gray-100 text-gray-600",
-};
+import { badgeClass, statusAssinaturaTone } from "@/lib/ui/badge";
 
 export default async function NegociosPage() {
   await requireAdmin();
@@ -23,11 +18,12 @@ export default async function NegociosPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Negócios</h1>
-          <p className="text-sm text-gray-500">Todos os negócios cadastrados na plataforma</p>
+          <h1 className="text-2xl font-bold text-slate-900">Negócios</h1>
+          <p className="text-sm text-slate-500">Todos os negócios cadastrados na plataforma</p>
         </div>
         <Link href="/admin/negocios/novo" className="btn-primary">
-          + Novo negócio
+          <Plus className="h-4 w-4" strokeWidth={2} />
+          Novo negócio
         </Link>
       </div>
 
@@ -36,7 +32,7 @@ export default async function NegociosPage() {
       <div className="card overflow-x-auto">
         <table className="w-full min-w-[640px]">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
               <th className="px-4 py-3">Nome</th>
               <th className="px-4 py-3">E-mail de contato</th>
               <th className="px-4 py-3">Plano</th>
@@ -47,20 +43,16 @@ export default async function NegociosPage() {
           </thead>
           <tbody>
             {(negocios as Negocio[] | null)?.map((n) => (
-              <tr key={n.id} className="border-b border-gray-100">
-                <td className="px-4 py-3 text-sm font-medium text-gray-900">{n.nome}</td>
-                <td className="px-4 py-3 text-sm text-gray-700">{n.email_contato}</td>
-                <td className="px-4 py-3 text-sm text-gray-700 capitalize">{n.plano}</td>
+              <tr key={n.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
+                <td className="px-4 py-3 text-sm font-medium text-slate-900">{n.nome}</td>
+                <td className="px-4 py-3 text-sm text-slate-700">{n.email_contato}</td>
+                <td className="px-4 py-3 text-sm text-slate-700 capitalize">{n.plano}</td>
                 <td className="px-4 py-3 text-sm">
-                  <span
-                    className={`badge ${
-                      STATUS_BADGE[n.status_assinatura] ?? "bg-gray-100 text-gray-600"
-                    }`}
-                  >
+                  <span className={badgeClass(statusAssinaturaTone(n.status_assinatura))}>
                     {n.status_assinatura}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-500">
+                <td className="px-4 py-3 text-sm text-slate-500">
                   {new Date(n.criado_em).toLocaleDateString("pt-BR")}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
@@ -76,7 +68,7 @@ export default async function NegociosPage() {
           </tbody>
         </table>
         {(!negocios || negocios.length === 0) && (
-          <p className="px-4 py-8 text-center text-sm text-gray-500">
+          <p className="px-4 py-8 text-center text-sm text-slate-500">
             Nenhum negócio cadastrado ainda.
           </p>
         )}

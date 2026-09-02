@@ -2,35 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens do Painel de Gestão. Espelham as classes utilitárias do
+ * Tailwind usadas em todo o app (brand-600/700, slate-50/500/900,
+ * green-600, amber-500) — mantidos aqui como referência única da paleta.
+ */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text: #0f172a;
+  --color-text-secondary: #64748b;
+}
+
 html,
 body {
   height: 100%;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-slate-50 text-slate-900;
 }
 
 .btn {
-  @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none;
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none;
 }
 .btn-primary {
   @apply btn bg-brand-600 text-white hover:bg-brand-700;
 }
 .btn-secondary {
-  @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50;
+  @apply btn bg-white text-slate-700 border border-slate-300 hover:bg-slate-50;
 }
 .btn-danger {
   @apply btn bg-red-600 text-white hover:bg-red-700;
 }
 .input {
-  @apply block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+  @apply block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
 }
 .label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
+  @apply block text-sm font-medium text-slate-700 mb-1;
 }
 .card {
-  @apply rounded-lg border border-gray-200 bg-white shadow-sm;
+  @apply rounded-xl border border-slate-200 bg-white shadow-sm;
 }
 .badge {
   @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;

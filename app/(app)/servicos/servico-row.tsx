@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type { Servico } from "@/types/database";
 import { atualizarServico, alternarAtivoServico, removerServico } from "./actions";
+import { badgeClass, ativoTone } from "@/lib/ui/badge";
 
 function formatBRL(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -34,7 +35,7 @@ export default function ServicoRow({ servico }: { servico: Servico }) {
 
   if (editando) {
     return (
-      <tr className="border-b border-gray-100 bg-gray-50">
+      <tr className="border-b border-slate-100 bg-slate-50">
         <td colSpan={4} className="px-4 py-3">
           <form action={handleSubmit} className="flex flex-wrap items-end gap-3">
             <div>
@@ -69,16 +70,12 @@ export default function ServicoRow({ servico }: { servico: Servico }) {
   }
 
   return (
-    <tr className="border-b border-gray-100">
-      <td className="px-4 py-3 text-sm font-medium text-gray-900">{servico.nome}</td>
-      <td className="px-4 py-3 text-sm text-gray-700">{formatBRL(servico.preco_mao_obra)}</td>
+    <tr className="border-b border-slate-100 transition-colors hover:bg-slate-50">
+      <td className="px-4 py-3 text-sm font-medium text-slate-900">{servico.nome}</td>
+      <td className="px-4 py-3 text-sm text-slate-700">{formatBRL(servico.preco_mao_obra)}</td>
       <td className="px-4 py-3 text-sm">
         <button onClick={handleToggle} disabled={pending}>
-          <span
-            className={`badge ${
-              servico.ativo ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-            }`}
-          >
+          <span className={badgeClass(ativoTone(servico.ativo))}>
             {servico.ativo ? "Ativo" : "Inativo"}
           </span>
         </button>

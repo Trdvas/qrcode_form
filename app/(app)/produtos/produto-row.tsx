@@ -30,7 +30,7 @@ export default function ProdutoRow({ produto }: { produto: Produto }) {
 
   if (editando) {
     return (
-      <tr className="border-b border-gray-100 bg-gray-50">
+      <tr className="border-b border-slate-100 bg-slate-50">
         <td colSpan={4} className="px-4 py-3">
           <form action={handleSubmit} className="flex flex-wrap items-end gap-3">
             <div>
@@ -74,10 +74,10 @@ export default function ProdutoRow({ produto }: { produto: Produto }) {
   }
 
   return (
-    <tr className="border-b border-gray-100">
-      <td className="px-4 py-3 text-sm font-medium text-gray-900">{produto.marca}</td>
-      <td className="px-4 py-3 text-sm text-gray-700">{produto.especificacao}</td>
-      <td className="px-4 py-3 text-sm text-gray-700">{formatBRL(produto.preco_litro)}</td>
+    <tr className="border-b border-slate-100 transition-colors hover:bg-slate-50">
+      <td className="px-4 py-3 text-sm font-medium text-slate-900">{produto.marca}</td>
+      <td className="px-4 py-3 text-sm text-slate-700">{produto.especificacao}</td>
+      <td className="px-4 py-3 text-sm text-slate-700">{formatBRL(produto.preco_litro)}</td>
       <td className="px-4 py-3 text-right text-sm">
         <button
           onClick={() => setEditando(true)}
