@@ -65,6 +65,45 @@ export interface Orcamento {
   data_ultimo_contato: string | null;
 }
 
+/**
+ * Tabela já existente em produção — este tipo só documenta as colunas
+ * usadas pelo app; não gerencia o schema (sem migration própria aqui).
+ */
+export interface VeiculoMotor {
+  id: string;
+  negocio_id: string;
+  modelo: string;
+  montadora: string;
+  ano_inicio: number | null;
+  ano_fim: number | null;
+  motor_descricao: string | null;
+  litros_oleo_motor: number | null;
+  produto_oleo_motor_id: string | null;
+  servico_motor_id: string | null;
+  /** Opções separadas por "|", cada uma "GRADE" ou "GRADE (detalhe)". */
+  viscosidade_recomendada: string;
+}
+
+/**
+ * Linha retornada pela function `sugerir_produtos_motor(p_negocio_id)`.
+ * Só inclui veículos ainda sem `produto_oleo_motor_id` e só combinações
+ * que efetivamente casaram com um produto — pode haver mais de uma linha
+ * por veículo (mais de uma opção de viscosidade e/ou mais de um produto
+ * compatível). Não sugere serviço.
+ */
+export interface SugestaoProdutoMotor {
+  veiculo_id: string;
+  modelo: string;
+  montadora: string;
+  motor_descricao: string | null;
+  ano_inicio: number | null;
+  ano_fim: number | null;
+  opcao_viscosidade: string;
+  produto_id: string;
+  produto_marca: string;
+  produto_especificacao: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -118,9 +157,20 @@ export interface Database {
         Update: Partial<Orcamento>;
         Relationships: [];
       };
+      veiculos_motor: {
+        Row: VeiculoMotor;
+        Insert: Partial<VeiculoMotor> & { negocio_id: string };
+        Update: Partial<VeiculoMotor>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      sugerir_produtos_motor: {
+        Args: { p_negocio_id: string };
+        Returns: SugestaoProdutoMotor[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

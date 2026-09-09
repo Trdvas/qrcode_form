@@ -19,8 +19,9 @@ npm install
 ### 2. Criar o projeto Supabase
 
 1. Crie um projeto em https://supabase.com.
-2. Rode a migration em `supabase/migrations/0001_init.sql` (via SQL Editor
-   do Supabase Studio, ou `supabase db push` com a Supabase CLI). Ela cria:
+2. Rode as migrations em `supabase/migrations/` (em ordem, via SQL Editor
+   do Supabase Studio, ou `supabase db push` com a Supabase CLI).
+   `0001_init.sql` cria:
    - as tabelas `negocios`, `usuarios_perfil`, `produtos`, `servicos`,
      `agendamentos`, `orcamentos`;
    - RLS habilitado em todas as tabelas de dados de negócio, com a policy
@@ -28,6 +29,17 @@ npm install
      policy de admin (`admin_plataforma` acessa tudo);
    - o trigger `trg_negocio_criado`, que dispara a Edge Function
      `welcome-email` a cada `insert` em `negocios`.
+
+   `0002_veiculos_motor.sql` só cria a function `sugerir_produtos_motor
+   (p_negocio_id)` — a tabela `veiculos_motor` já existe em produção e não é
+   criada/alterada por esta migration. A function é usada pela tela
+   **Produtos e Serviços → Vincular veículos** (`/produtos/vincular`) para
+   sugerir automaticamente, a partir da `viscosidade_recomendada` de cada
+   veículo ainda sem `produto_oleo_motor_id`, o produto (óleo) compatível
+   cadastrado. O serviço (`servico_motor_id`) não é sugerido — o usuário
+   escolhe manualmente, em um dropdown com os serviços ativos do negócio,
+   qual serviço vincular; produto e serviço são obrigatórios, e nada é
+   gravado se algum par selecionado estiver incompleto.
 3. Deploy da Edge Function de e-mail de boas-vindas:
    ```bash
    supabase functions deploy welcome-email

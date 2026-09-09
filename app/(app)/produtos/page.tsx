@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Wand2 } from "lucide-react";
 import { requireNegocioContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Produto } from "@/types/database";
@@ -24,7 +26,13 @@ export default async function ProdutosPage() {
 
       <div className="flex items-center justify-between">
         <ProdutosServicosTabs ativa="produtos" />
-        <NovoProdutoForm />
+        <div className="flex items-center gap-2">
+          <Link href="/produtos/vincular" className="btn-secondary">
+            <Wand2 className="h-4 w-4" strokeWidth={2} />
+            Vincular veículos
+          </Link>
+          <NovoProdutoForm />
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-600">{error.message}</p>}
