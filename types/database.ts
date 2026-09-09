@@ -65,6 +65,31 @@ export interface Orcamento {
   data_ultimo_contato: string | null;
 }
 
+export interface VeiculoMotor {
+  id: string;
+  negocio_id: string;
+  marca: string;
+  modelo: string;
+  especificacao_oleo_recomendada: string;
+  produto_oleo_motor_id: string | null;
+  servico_motor_id: string | null;
+  criado_em: string;
+}
+
+/** Linha retornada pela function `sugerir_produtos_motor(p_negocio_id)`. */
+export interface SugestaoProdutoMotor {
+  veiculo_motor_id: string;
+  marca: string;
+  modelo: string;
+  especificacao_oleo_recomendada: string;
+  produto_atual_id: string | null;
+  servico_atual_id: string | null;
+  produto_sugerido_id: string | null;
+  produto_sugerido_label: string | null;
+  servico_sugerido_id: string | null;
+  servico_sugerido_label: string | null;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -118,9 +143,25 @@ export interface Database {
         Update: Partial<Orcamento>;
         Relationships: [];
       };
+      veiculos_motor: {
+        Row: VeiculoMotor;
+        Insert: Partial<VeiculoMotor> & {
+          negocio_id: string;
+          marca: string;
+          modelo: string;
+          especificacao_oleo_recomendada: string;
+        };
+        Update: Partial<VeiculoMotor>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      sugerir_produtos_motor: {
+        Args: { p_negocio_id: string };
+        Returns: SugestaoProdutoMotor[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
