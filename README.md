@@ -36,8 +36,10 @@ npm install
    **Produtos e Serviços → Vincular veículos** (`/produtos/vincular`) para
    sugerir automaticamente, a partir da `viscosidade_recomendada` de cada
    veículo ainda sem `produto_oleo_motor_id`, o produto (óleo) compatível
-   cadastrado. Não sugere serviço — `servico_motor_id` não é tocado por essa
-   tela.
+   cadastrado. O serviço (`servico_motor_id`) não é sugerido — o usuário
+   escolhe manualmente, em um dropdown com os serviços ativos do negócio,
+   qual serviço vincular; produto e serviço são obrigatórios, e nada é
+   gravado se algum par selecionado estiver incompleto.
 3. Deploy da Edge Function de e-mail de boas-vindas:
    ```bash
    supabase functions deploy welcome-email

@@ -2,16 +2,23 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireNegocioContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
-import type { SugestaoProdutoMotor } from "@/types/database";
+import type { Servico, SugestaoProdutoMotor } from "@/types/database";
 import VincularList from "./vincular-list";
 
 export default async function VincularVeiculosPage() {
   const ctx = await requireNegocioContext();
   const supabase = createClient();
 
-  const { data: sugestoes, error } = await supabase.rpc("sugerir_produtos_motor", {
-    p_negocio_id: ctx.effectiveNegocioId,
-  });
+  const [{ data: sugestoes, error }, { data: servicosAtivos, error: erroServicos }] =
+    await Promise.all([
+      supabase.rpc("sugerir_produtos_motor", { p_negocio_id: ctx.effectiveNegocioId }),
+      supabase
+        .from("servicos")
+        .select("*")
+        .eq("negocio_id", ctx.effectiveNegocioId)
+        .eq("ativo", true)
+        .order("nome", { ascending: true }),
+    ]);
 
   return (
     <div className="space-y-6">
@@ -29,20 +36,32 @@ export default async function VincularVeiculosPage() {
           partir da viscosidade recomendada
         </p>
         <p className="mt-1 text-xs text-slate-400">
-          O vínculo de serviço não é sugerido automaticamente aqui — só o produto.
+          O serviço não é sugerido automaticamente — escolha manualmente antes de confirmar.
         </p>
       </div>
 
       {error && <p className="text-sm text-red-600">{error.message}</p>}
+      {erroServicos && <p className="text-sm text-red-600">{erroServicos.message}</p>}
+
+      {!error && !erroServicos && sugestoes && sugestoes.length > 0 && !servicosAtivos?.length && (
+        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">
+          Nenhum serviço ativo cadastrado — ative ou cadastre um serviço para conseguir confirmar
+          os vínculos abaixo.
+        </p>
+      )}
 
       {!error &&
+        !erroServicos &&
         (!sugestoes || sugestoes.length === 0 ? (
           <div className="card p-8 text-center text-sm text-slate-500">
             Nenhuma sugestão de vínculo por aqui — todos os veículos já têm produto vinculado, ou
             nenhum produto cadastrado combina com a viscosidade recomendada.
           </div>
         ) : (
-          <VincularList sugestoes={sugestoes as SugestaoProdutoMotor[]} />
+          <VincularList
+            sugestoes={sugestoes as SugestaoProdutoMotor[]}
+            servicosAtivos={(servicosAtivos ?? []) as Servico[]}
+          />
         ))}
     </div>
   );

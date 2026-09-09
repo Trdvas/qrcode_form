@@ -2,15 +2,22 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { CheckCircle2 } from "lucide-react";
-import type { SugestaoProdutoMotor } from "@/types/database";
+import type { Servico, SugestaoProdutoMotor } from "@/types/database";
 import { confirmarVinculos, type ParVinculo } from "./actions";
 
 function chave(s: SugestaoProdutoMotor) {
   return `${s.veiculo_id}:${s.produto_id}`;
 }
 
-export default function VincularList({ sugestoes }: { sugestoes: SugestaoProdutoMotor[] }) {
+export default function VincularList({
+  sugestoes,
+  servicosAtivos,
+}: {
+  sugestoes: SugestaoProdutoMotor[];
+  servicosAtivos: Servico[];
+}) {
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
+  const [servicoPorVeiculo, setServicoPorVeiculo] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
@@ -53,12 +60,28 @@ export default function VincularList({ sugestoes }: { sugestoes: SugestaoProduto
     setSelecionados(novo);
   }
 
+  function selecionarServico(veiculoId: string, servicoId: string) {
+    setServicoPorVeiculo((atual) => ({ ...atual, [veiculoId]: servicoId }));
+  }
+
   function handleConfirmar() {
     setErro(null);
     setSucesso(null);
-    const pares: ParVinculo[] = sugestoes
-      .filter((s) => selecionados.has(chave(s)))
-      .map((s) => ({ veiculoId: s.veiculo_id, produtoId: s.produto_id }));
+
+    const linhasSelecionadas = sugestoes.filter((s) => selecionados.has(chave(s)));
+    const semServico = linhasSelecionadas.find((s) => !servicoPorVeiculo[s.veiculo_id]);
+    if (semServico) {
+      setErro(
+        `Escolha um serviço para "${semServico.montadora} ${semServico.modelo}" antes de confirmar.`
+      );
+      return;
+    }
+
+    const pares: ParVinculo[] = linhasSelecionadas.map((s) => ({
+      veiculoId: s.veiculo_id,
+      produtoId: s.produto_id,
+      servicoId: servicoPorVeiculo[s.veiculo_id],
+    }));
 
     startTransition(async () => {
       try {
@@ -100,7 +123,7 @@ export default function VincularList({ sugestoes }: { sugestoes: SugestaoProduto
       )}
 
       <div className="card overflow-x-auto">
-        <table className="w-full min-w-[720px]">
+        <table className="w-full min-w-[860px]">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
               <th className="w-10 px-4 py-3" />
@@ -108,6 +131,7 @@ export default function VincularList({ sugestoes }: { sugestoes: SugestaoProduto
               <th className="px-4 py-3">Motor</th>
               <th className="px-4 py-3">Viscosidade</th>
               <th className="px-4 py-3">Produto sugerido</th>
+              <th className="px-4 py-3">Serviço *</th>
             </tr>
           </thead>
           <tbody>
@@ -135,6 +159,21 @@ export default function VincularList({ sugestoes }: { sugestoes: SugestaoProduto
                   <td className="px-4 py-3 text-sm text-slate-700">{s.opcao_viscosidade}</td>
                   <td className="px-4 py-3 text-sm text-slate-700">
                     {s.produto_marca} — {s.produto_especificacao}
+                  </td>
+                  <td className="px-4 py-3">
+                    <select
+                      className="input h-9 min-w-[180px] py-0 text-sm"
+                      value={servicoPorVeiculo[s.veiculo_id] ?? ""}
+                      onChange={(e) => selecionarServico(s.veiculo_id, e.target.value)}
+                      disabled={servicosAtivos.length === 0}
+                    >
+                      <option value="">Selecione um serviço</option>
+                      {servicosAtivos.map((servico) => (
+                        <option key={servico.id} value={servico.id}>
+                          {servico.nome}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                 </tr>
               );
