@@ -3,7 +3,11 @@
 import { useMemo, useState, useTransition } from "react";
 import { CheckCircle2 } from "lucide-react";
 import type { SugestaoProdutoMotor } from "@/types/database";
-import { confirmarVinculos } from "./actions";
+import { confirmarVinculos, type ParVinculo } from "./actions";
+
+function chave(s: SugestaoProdutoMotor) {
+  return `${s.veiculo_id}:${s.produto_id}`;
+}
 
 export default function VincularList({ sugestoes }: { sugestoes: SugestaoProdutoMotor[] }) {
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
@@ -11,37 +15,55 @@ export default function VincularList({ sugestoes }: { sugestoes: SugestaoProduto
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
 
-  const selecionaveis = useMemo(
-    () => sugestoes.filter((s) => s.produto_sugerido_id && s.servico_sugerido_id),
-    [sugestoes]
-  );
-  const todosSelecionados =
-    selecionaveis.length > 0 && selecionaveis.every((s) => selecionados.has(s.veiculo_motor_id));
+  const todasChaves = useMemo(() => sugestoes.map(chave), [sugestoes]);
+  const todosSelecionados = todasChaves.length > 0 && todasChaves.every((k) => selecionados.has(k));
 
-  function alternar(id: string) {
+  // Um veículo pode ter mais de uma opção de produto compatível — mas só um
+  // produto pode ficar vinculado. Selecionar uma linha desmarca as outras
+  // linhas do mesmo veículo, para nunca mandar dois pares conflitantes.
+  function alternar(s: SugestaoProdutoMotor) {
+    const k = chave(s);
     setSelecionados((atual) => {
       const novo = new Set(atual);
-      if (novo.has(id)) novo.delete(id);
-      else novo.add(id);
+      if (novo.has(k)) {
+        novo.delete(k);
+        return novo;
+      }
+      for (const outra of sugestoes) {
+        if (outra.veiculo_id === s.veiculo_id) novo.delete(chave(outra));
+      }
+      novo.add(k);
       return novo;
     });
   }
 
   function alternarTodos() {
-    setSelecionados((atual) => {
-      if (todosSelecionados) return new Set();
-      return new Set(selecionaveis.map((s) => s.veiculo_motor_id));
-    });
+    if (todosSelecionados) {
+      setSelecionados(new Set());
+      return;
+    }
+    // Ao marcar tudo, fica só a primeira opção de cada veículo.
+    const vistos = new Set<string>();
+    const novo = new Set<string>();
+    for (const s of sugestoes) {
+      if (vistos.has(s.veiculo_id)) continue;
+      vistos.add(s.veiculo_id);
+      novo.add(chave(s));
+    }
+    setSelecionados(novo);
   }
 
   function handleConfirmar() {
     setErro(null);
     setSucesso(null);
-    const ids = Array.from(selecionados);
+    const pares: ParVinculo[] = sugestoes
+      .filter((s) => selecionados.has(chave(s)))
+      .map((s) => ({ veiculoId: s.veiculo_id, produtoId: s.produto_id }));
+
     startTransition(async () => {
       try {
-        await confirmarVinculos(ids);
-        setSucesso(`${ids.length} veículo(s) vinculado(s) com sucesso.`);
+        await confirmarVinculos(pares);
+        setSucesso(`${pares.length} veículo(s) vinculado(s) com sucesso.`);
         setSelecionados(new Set());
       } catch (e) {
         setErro(e instanceof Error ? e.message : "Erro ao confirmar o vínculo.");
@@ -58,9 +80,8 @@ export default function VincularList({ sugestoes }: { sugestoes: SugestaoProduto
             className="h-4 w-4 rounded border-slate-300"
             checked={todosSelecionados}
             onChange={alternarTodos}
-            disabled={selecionaveis.length === 0}
           />
-          Selecionar todos ({selecionaveis.length})
+          Selecionar todos
         </label>
         <button
           type="button"
@@ -84,43 +105,36 @@ export default function VincularList({ sugestoes }: { sugestoes: SugestaoProduto
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
               <th className="w-10 px-4 py-3" />
               <th className="px-4 py-3">Veículo</th>
-              <th className="px-4 py-3">Óleo recomendado</th>
+              <th className="px-4 py-3">Motor</th>
+              <th className="px-4 py-3">Viscosidade</th>
               <th className="px-4 py-3">Produto sugerido</th>
-              <th className="px-4 py-3">Serviço sugerido</th>
             </tr>
           </thead>
           <tbody>
             {sugestoes.map((s) => {
-              const completa = Boolean(s.produto_sugerido_id && s.servico_sugerido_id);
+              const k = chave(s);
+              const anos =
+                s.ano_inicio || s.ano_fim
+                  ? `${s.ano_inicio ?? "?"}–${s.ano_fim ?? "atual"}`
+                  : null;
               return (
-                <tr
-                  key={s.veiculo_motor_id}
-                  className="border-b border-slate-100 transition-colors hover:bg-slate-50"
-                >
+                <tr key={k} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                   <td className="px-4 py-3">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-slate-300 disabled:opacity-40"
-                      checked={selecionados.has(s.veiculo_motor_id)}
-                      onChange={() => alternar(s.veiculo_motor_id)}
-                      disabled={!completa}
+                      className="h-4 w-4 rounded border-slate-300"
+                      checked={selecionados.has(k)}
+                      onChange={() => alternar(s)}
                     />
                   </td>
                   <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                    {s.marca} {s.modelo}
+                    {s.montadora} {s.modelo}
+                    {anos && <span className="ml-1.5 font-normal text-slate-500">{anos}</span>}
                   </td>
+                  <td className="px-4 py-3 text-sm text-slate-700">{s.motor_descricao ?? "—"}</td>
+                  <td className="px-4 py-3 text-sm text-slate-700">{s.opcao_viscosidade}</td>
                   <td className="px-4 py-3 text-sm text-slate-700">
-                    {s.especificacao_oleo_recomendada}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-700">
-                    {s.produto_sugerido_label ?? (
-                      <span className="text-slate-400">Nenhum produto compatível</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-700">
-                    {s.servico_sugerido_label ?? (
-                      <span className="text-slate-400">Nenhum serviço ativo compatível</span>
-                    )}
+                    {s.produto_marca} — {s.produto_especificacao}
                   </td>
                 </tr>
               );

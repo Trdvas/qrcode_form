@@ -5,17 +5,25 @@ import { createClient } from "@/lib/supabase/server";
 import { requireNegocioContext } from "@/lib/supabase/context";
 import type { SugestaoProdutoMotor } from "@/types/database";
 
+export interface ParVinculo {
+  veiculoId: string;
+  produtoId: string;
+}
+
 /**
- * Confirma, em lote, o vínculo sugerido (produto de óleo + serviço) para os
- * veículos de motor selecionados. Busca as sugestões de novo no servidor via
- * `sugerir_produtos_motor` — nunca confia em produto/serviço vindos do
- * cliente — e só grava as que tiverem sugestão completa disponível.
+ * Confirma, em lote, o vínculo de produto (óleo) sugerido para os pares
+ * veículo/produto selecionados. Busca as sugestões de novo no servidor via
+ * `sugerir_produtos_motor` — nunca confia no par vindo do cliente — e só
+ * grava os pares que ainda estiverem entre as sugestões atuais.
+ *
+ * A function `sugerir_produtos_motor` não sugere serviço; `servico_motor_id`
+ * não é tocado por esta ação.
  */
-export async function confirmarVinculos(veiculoMotorIds: string[]) {
+export async function confirmarVinculos(pares: ParVinculo[]) {
   const ctx = await requireNegocioContext();
 
-  const ids = veiculoMotorIds.filter(Boolean);
-  if (ids.length === 0) {
+  const validos = pares.filter((p) => p.veiculoId && p.produtoId);
+  if (validos.length === 0) {
     throw new Error("Selecione ao menos um veículo para vincular.");
   }
 
@@ -27,25 +35,24 @@ export async function confirmarVinculos(veiculoMotorIds: string[]) {
   );
   if (erroSugestoes) throw new Error(erroSugestoes.message);
 
-  const selecionadas = ((sugestoes ?? []) as SugestaoProdutoMotor[]).filter(
-    (s) => ids.includes(s.veiculo_motor_id) && s.produto_sugerido_id && s.servico_sugerido_id
+  const sugestoesValidas = new Set(
+    ((sugestoes ?? []) as SugestaoProdutoMotor[]).map((s) => `${s.veiculo_id}:${s.produto_id}`)
   );
 
-  if (selecionadas.length === 0) {
-    throw new Error(
-      "Nenhum dos veículos selecionados tem uma sugestão completa de produto e serviço."
-    );
+  const confirmadas = validos.filter((p) =>
+    sugestoesValidas.has(`${p.veiculoId}:${p.produtoId}`)
+  );
+
+  if (confirmadas.length === 0) {
+    throw new Error("Os pares selecionados não estão mais entre as sugestões atuais.");
   }
 
   const resultados = await Promise.all(
-    selecionadas.map((s) =>
+    confirmadas.map((p) =>
       supabase
         .from("veiculos_motor")
-        .update({
-          produto_oleo_motor_id: s.produto_sugerido_id,
-          servico_motor_id: s.servico_sugerido_id,
-        })
-        .eq("id", s.veiculo_motor_id)
+        .update({ produto_oleo_motor_id: p.produtoId })
+        .eq("id", p.veiculoId)
         .eq("negocio_id", ctx.effectiveNegocioId)
     )
   );

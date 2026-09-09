@@ -30,13 +30,14 @@ npm install
    - o trigger `trg_negocio_criado`, que dispara a Edge Function
      `welcome-email` a cada `insert` em `negocios`.
 
-   `0002_veiculos_motor.sql` cria a tabela `veiculos_motor` (catálogo de
-   perfis de motor por negócio, com `produto_oleo_motor_id` e
-   `servico_motor_id` opcionais) e a function `sugerir_produtos_motor
-   (p_negocio_id)`, usada pela tela **Produtos e Serviços → Vincular
-   veículos** (`/produtos/vincular`) para sugerir automaticamente o produto
-   de óleo e o serviço mais adequados para cada veículo ainda sem vínculo
-   (ou com vínculo diferente do sugerido).
+   `0002_veiculos_motor.sql` só cria a function `sugerir_produtos_motor
+   (p_negocio_id)` — a tabela `veiculos_motor` já existe em produção e não é
+   criada/alterada por esta migration. A function é usada pela tela
+   **Produtos e Serviços → Vincular veículos** (`/produtos/vincular`) para
+   sugerir automaticamente, a partir da `viscosidade_recomendada` de cada
+   veículo ainda sem `produto_oleo_motor_id`, o produto (óleo) compatível
+   cadastrado. Não sugere serviço — `servico_motor_id` não é tocado por essa
+   tela.
 3. Deploy da Edge Function de e-mail de boas-vindas:
    ```bash
    supabase functions deploy welcome-email

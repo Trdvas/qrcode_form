@@ -1,92 +1,63 @@
 -- ============================================================================
--- Vínculo automático de veículos de motor com produtos (óleo) e serviços
+-- Sugestão automática de produto (óleo) para veículos de motor
 -- ============================================================================
 --
--- `veiculos_motor` é o catálogo de perfis de motor cadastrados por negócio
--- (marca/modelo + especificação de óleo recomendada), que pode ser vinculado
--- a um produto (óleo) e a um serviço (mão de obra) já cadastrados. A função
--- `sugerir_produtos_motor` sugere, para cada veículo do negócio, o produto e
--- o serviço mais adequados ainda não vinculados corretamente.
-
-create table if not exists veiculos_motor (
-  id uuid primary key default gen_random_uuid(),
-  negocio_id uuid not null references negocios (id) on delete cascade,
-  marca text not null,
-  modelo text not null,
-  especificacao_oleo_recomendada text not null,
-  produto_oleo_motor_id uuid references produtos (id) on delete set null,
-  servico_motor_id uuid references servicos (id) on delete set null,
-  criado_em timestamptz not null default now()
-);
-
-create index if not exists idx_veiculos_motor_negocio_id on veiculos_motor (negocio_id);
-
-alter table veiculos_motor enable row level security;
-
-create policy "veiculos_motor_all" on veiculos_motor for all
-  using (auth_is_admin_plataforma() or negocio_id = auth_negocio_id())
-  with check (auth_is_admin_plataforma() or negocio_id = auth_negocio_id());
-
--- ----------------------------------------------------------------------------
--- sugerir_produtos_motor(p_negocio_id)
--- ----------------------------------------------------------------------------
--- Para cada veículo do negócio cujo vínculo atual (produto_oleo_motor_id /
--- servico_motor_id) difere do que seria sugerido hoje — incluindo veículos
--- ainda sem nenhum vínculo — retorna o produto e o serviço sugeridos:
---   - produto: o de menor preço/litro cuja especificação contém a
---     especificação de óleo recomendada do veículo;
---   - serviço: o serviço ativo de menor mão de obra cujo nome contenha "óleo".
--- security invoker (padrão do Postgres): as consultas internas respeitam a
--- RLS do usuário chamador, então cada dono de negócio só vê sugestões do seu
--- próprio negocio_id mesmo que informe outro id.
-create or replace function sugerir_produtos_motor(p_negocio_id uuid)
-returns table (
-  veiculo_motor_id uuid,
-  marca text,
+-- `veiculos_motor` já existe em produção (não é criada/alterada por esta
+-- migration). Colunas relevantes usadas aqui: id, negocio_id, modelo,
+-- montadora, ano_inicio, ano_fim, motor_descricao, litros_oleo_motor,
+-- produto_oleo_motor_id, servico_motor_id, viscosidade_recomendada.
+--
+-- `viscosidade_recomendada` guarda uma ou mais opções separadas por "|",
+-- cada uma no formato "GRADE" ou "GRADE (detalhe extra)" — ex.:
+-- "5W30 (Sintético)|5W40". A function abaixo casa cada opção com produtos
+-- cuja especificação começa com a mesma grade (normalizada, sem espaços/
+-- pontuação) e cujo restante da especificação (quando houver) aparece no
+-- detalhe extra da opção.
+--
+-- Só considera veículos ainda sem produto vinculado (produto_oleo_motor_id
+-- is null) e só retorna combinações veículo/opção que efetivamente casaram
+-- com algum produto — pode haver mais de uma linha por veículo quando mais
+-- de uma opção de viscosidade ou mais de um produto casam.
+create or replace function public.sugerir_produtos_motor(p_negocio_id uuid)
+returns table(
+  veiculo_id uuid,
   modelo text,
-  especificacao_oleo_recomendada text,
-  produto_atual_id uuid,
-  servico_atual_id uuid,
-  produto_sugerido_id uuid,
-  produto_sugerido_label text,
-  servico_sugerido_id uuid,
-  servico_sugerido_label text
+  montadora text,
+  motor_descricao text,
+  ano_inicio int,
+  ano_fim int,
+  opcao_viscosidade text,
+  produto_id uuid,
+  produto_marca text,
+  produto_especificacao text
 )
 language sql
 stable
-security invoker
-set search_path = public
 as $$
-  select
-    vm.id as veiculo_motor_id,
-    vm.marca,
-    vm.modelo,
-    vm.especificacao_oleo_recomendada,
-    vm.produto_oleo_motor_id as produto_atual_id,
-    vm.servico_motor_id as servico_atual_id,
-    p.id as produto_sugerido_id,
-    p.label as produto_sugerido_label,
-    s.id as servico_sugerido_id,
-    s.nome as servico_sugerido_label
-  from veiculos_motor vm
-  left join lateral (
-    select pr.id, (pr.marca || ' — ' || pr.especificacao) as label
-    from produtos pr
-    where pr.negocio_id = p_negocio_id
-      and pr.especificacao ilike '%' || vm.especificacao_oleo_recomendada || '%'
-    order by pr.preco_litro asc
-    limit 1
-  ) p on true
-  left join lateral (
-    select se.id, se.nome
-    from servicos se
-    where se.negocio_id = p_negocio_id
-      and se.ativo = true
-      and se.nome ilike '%óleo%'
-    order by se.preco_mao_obra asc
-    limit 1
-  ) s on true
-  where vm.negocio_id = p_negocio_id
-    and (vm.produto_oleo_motor_id is distinct from p.id or vm.servico_motor_id is distinct from s.id)
-  order by vm.marca, vm.modelo;
+  with segmentos as (
+    select
+      vm.id as veiculo_id,
+      vm.modelo, vm.montadora, vm.motor_descricao, vm.ano_inicio, vm.ano_fim,
+      trim(seg) as opcao_original,
+      upper(regexp_replace(split_part(seg, '(', 1), '[^a-zA-Z0-9]', '', 'g')) as grade_segmento,
+      upper(regexp_replace(coalesce(substring(seg from '\((.*)\)'), ''), '[^a-zA-Z0-9]', '', 'g')) as resto_segmento
+    from veiculos_motor vm
+    cross join lateral unnest(string_to_array(vm.viscosidade_recomendada, '|')) as seg
+    where vm.negocio_id = p_negocio_id
+      and vm.produto_oleo_motor_id is null
+  ),
+  produtos_norm as (
+    select
+      p.id as produto_id, p.marca, p.especificacao,
+      upper(regexp_replace(split_part(trim(p.especificacao), ' ', 1), '[^a-zA-Z0-9]', '', 'g')) as grade_produto,
+      upper(regexp_replace(substring(trim(p.especificacao) from position(' ' in trim(p.especificacao)) + 1), '[^a-zA-Z0-9]', '', 'g')) as resto_produto
+    from produtos p
+    where p.negocio_id = p_negocio_id
+  )
+  select s.veiculo_id, s.modelo, s.montadora, s.motor_descricao, s.ano_inicio, s.ano_fim,
+    s.opcao_original, pn.produto_id, pn.marca, pn.especificacao
+  from segmentos s
+  join produtos_norm pn
+    on pn.grade_produto = s.grade_segmento
+   and (pn.resto_produto = '' or s.resto_segmento like '%' || pn.resto_produto || '%');
 $$;

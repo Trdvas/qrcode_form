@@ -25,7 +25,11 @@ export default async function VincularVeiculosPage() {
         </Link>
         <h1 className="text-2xl font-bold text-slate-900">Vincular Veículos</h1>
         <p className="text-sm text-slate-500">
-          Sugestão automática de produto (óleo) e serviço para cada veículo de motor cadastrado
+          Sugestão automática de produto (óleo) para cada veículo de motor ainda sem vínculo, a
+          partir da viscosidade recomendada
+        </p>
+        <p className="mt-1 text-xs text-slate-400">
+          O vínculo de serviço não é sugerido automaticamente aqui — só o produto.
         </p>
       </div>
 
@@ -34,7 +38,8 @@ export default async function VincularVeiculosPage() {
       {!error &&
         (!sugestoes || sugestoes.length === 0 ? (
           <div className="card p-8 text-center text-sm text-slate-500">
-            Nenhum veículo pendente de vínculo por aqui.
+            Nenhuma sugestão de vínculo por aqui — todos os veículos já têm produto vinculado, ou
+            nenhum produto cadastrado combina com a viscosidade recomendada.
           </div>
         ) : (
           <VincularList sugestoes={sugestoes as SugestaoProdutoMotor[]} />
