@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireNegocioContext } from "@/lib/supabase/context";
+import { requireContext } from "@/lib/supabase/context";
 
 function parsePreco(valor: FormDataEntryValue | null): number {
   const n = Number(String(valor ?? "").replace(",", "."));
@@ -11,7 +11,7 @@ function parsePreco(valor: FormDataEntryValue | null): number {
 }
 
 export async function criarServico(formData: FormData) {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
   const nome = String(formData.get("nome") || "").trim();
@@ -19,16 +19,14 @@ export async function criarServico(formData: FormData) {
 
   if (!nome) throw new Error("Nome do serviço é obrigatório.");
 
-  const { error } = await supabase
-    .from("servicos")
-    .insert({ negocio_id: ctx.effectiveNegocioId, nome, preco_mao_obra });
+  const { error } = await supabase.from("servicos").insert({ nome, preco_mao_obra });
 
   if (error) throw new Error(error.message);
   revalidatePath("/servicos");
 }
 
 export async function atualizarServico(servicoId: string, formData: FormData) {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
   const nome = String(formData.get("nome") || "").trim();
@@ -39,36 +37,27 @@ export async function atualizarServico(servicoId: string, formData: FormData) {
   const { error } = await supabase
     .from("servicos")
     .update({ nome, preco_mao_obra })
-    .eq("id", servicoId)
-    .eq("negocio_id", ctx.effectiveNegocioId);
+    .eq("id", servicoId);
 
   if (error) throw new Error(error.message);
   revalidatePath("/servicos");
 }
 
 export async function alternarAtivoServico(servicoId: string, ativo: boolean) {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
-  const { error } = await supabase
-    .from("servicos")
-    .update({ ativo })
-    .eq("id", servicoId)
-    .eq("negocio_id", ctx.effectiveNegocioId);
+  const { error } = await supabase.from("servicos").update({ ativo }).eq("id", servicoId);
 
   if (error) throw new Error(error.message);
   revalidatePath("/servicos");
 }
 
 export async function removerServico(servicoId: string) {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
-  const { error } = await supabase
-    .from("servicos")
-    .delete()
-    .eq("id", servicoId)
-    .eq("negocio_id", ctx.effectiveNegocioId);
+  const { error } = await supabase.from("servicos").delete().eq("id", servicoId);
 
   if (error) throw new Error(error.message);
   revalidatePath("/servicos");

@@ -1,4 +1,4 @@
-import { requireNegocioContext } from "@/lib/supabase/context";
+import { requireContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Servico } from "@/types/database";
 import ProdutosServicosTabs from "../produtos-servicos-tabs";
@@ -6,13 +6,12 @@ import ServicoRow from "./servico-row";
 import NovoServicoForm from "./novo-servico-form";
 
 export default async function ServicosPage() {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
   const { data: servicos, error } = await supabase
     .from("servicos")
     .select("*")
-    .eq("negocio_id", ctx.effectiveNegocioId)
     .order("nome", { ascending: true });
 
   return (

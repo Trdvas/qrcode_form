@@ -21,12 +21,6 @@ export function statusAgendamentoTone(status: string): BadgeTone {
   return "neutral"; // concluido e outros
 }
 
-export function statusAssinaturaTone(status: string): BadgeTone {
-  if (status === "ativo") return "success";
-  if (status === "cancelado" || status === "inadimplente") return "danger";
-  return "neutral"; // trial
-}
-
 export function ativoTone(ativo: boolean): BadgeTone {
   return ativo ? "success" : "neutral";
 }

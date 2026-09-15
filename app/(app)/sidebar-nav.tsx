@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, Package, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Calendar, Package, Settings, type LucideIcon } from "lucide-react";
 
 const NAV_ITEMS: { href: string; label: string; icon: LucideIcon; match: (path: string) => boolean }[] = [
   {
@@ -25,12 +25,24 @@ const NAV_ITEMS: { href: string; label: string; icon: LucideIcon; match: (path: 
   },
 ];
 
-export default function SidebarNav() {
+export default function SidebarNav({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
+
+  const items = isAdmin
+    ? [
+        ...NAV_ITEMS,
+        {
+          href: "/admin",
+          label: "Configurações",
+          icon: Settings,
+          match: (path: string) => path.startsWith("/admin"),
+        },
+      ]
+    : NAV_ITEMS;
 
   return (
     <nav className="space-y-1 px-3">
-      {NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const ativo = item.match(pathname);
         const Icon = item.icon;
         return (

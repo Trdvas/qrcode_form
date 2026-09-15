@@ -1,33 +1,28 @@
 // Tipos manuais espelhando o schema Supabase definido em supabase/migrations/0001_init.sql.
 // Se preferir, substitua por tipos gerados via `supabase gen types typescript`.
 
-export type Role = "dono_negocio" | "admin_plataforma";
-
-export type StatusAssinatura = "ativo" | "inadimplente" | "cancelado" | "trial";
+export type Role = "admin" | "operador";
 
 export type StatusAgendamento = "confirmado" | "concluido" | "cancelado";
 
 export type StatusOrcamento = "enviado" | "em_negociacao" | "aprovado" | "recusado" | "expirado";
 
+/** Dados do único negócio administrado por este painel (tabela singleton). */
 export interface Negocio {
-  id: string;
+  id: true;
   nome: string;
   email_contato: string;
-  plano: string;
-  status_assinatura: StatusAssinatura | string;
   criado_em: string;
 }
 
 export interface UsuarioPerfil {
   id: string;
-  negocio_id: string | null;
   role: Role;
   criado_em: string;
 }
 
 export interface Produto {
   id: string;
-  negocio_id: string;
   marca: string;
   especificacao: string;
   preco_litro: number;
@@ -36,7 +31,6 @@ export interface Produto {
 
 export interface Servico {
   id: string;
-  negocio_id: string;
   nome: string;
   preco_mao_obra: number;
   ativo: boolean;
@@ -45,7 +39,6 @@ export interface Servico {
 
 export interface Agendamento {
   id: string;
-  negocio_id: string;
   session_id: string;
   veiculo: string | null;
   data_hora_inicio: string;
@@ -56,7 +49,6 @@ export interface Agendamento {
 
 export interface Orcamento {
   id: string;
-  negocio_id: string;
   session_id: string;
   veiculo: string | null;
   valor_total: number | null;
@@ -68,9 +60,9 @@ export interface Orcamento {
 export interface Database {
   public: {
     Tables: {
-      negocios: {
+      negocio: {
         Row: Negocio;
-        Insert: Partial<Negocio> & { nome: string; email_contato: string };
+        Insert: Partial<Negocio>;
         Update: Partial<Negocio>;
         Relationships: [];
       };
@@ -83,7 +75,6 @@ export interface Database {
       produtos: {
         Row: Produto;
         Insert: Partial<Produto> & {
-          negocio_id: string;
           marca: string;
           especificacao: string;
           preco_litro: number;
@@ -94,7 +85,6 @@ export interface Database {
       servicos: {
         Row: Servico;
         Insert: Partial<Servico> & {
-          negocio_id: string;
           nome: string;
           preco_mao_obra: number;
         };
@@ -104,7 +94,6 @@ export interface Database {
       agendamentos: {
         Row: Agendamento;
         Insert: Partial<Agendamento> & {
-          negocio_id: string;
           session_id: string;
           data_hora_inicio: string;
           data_hora_fim: string;
@@ -114,7 +103,7 @@ export interface Database {
       };
       orcamentos: {
         Row: Orcamento;
-        Insert: Partial<Orcamento> & { negocio_id: string; session_id: string };
+        Insert: Partial<Orcamento> & { session_id: string };
         Update: Partial<Orcamento>;
         Relationships: [];
       };
