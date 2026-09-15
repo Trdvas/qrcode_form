@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </span>
           <span className="text-[15px] font-bold text-slate-900">Painel de Gestão</span>
         </div>
-        <p className="px-8 pb-5 text-xs text-slate-500">Administrador da plataforma</p>
+        <p className="px-8 pb-5 text-xs text-slate-500">Administração do negócio</p>
         <AdminSidebarNav />
       </aside>
 
@@ -30,7 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </span>
               <div className="hidden leading-tight sm:block">
                 <p className="text-sm font-medium text-slate-900">{nomeFromEmail(ctx.email)}</p>
-                <p className="text-xs text-slate-500">Admin da plataforma</p>
+                <p className="text-xs text-slate-500">Administrador</p>
               </div>
             </div>
             <form action={signOut}>

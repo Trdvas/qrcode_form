@@ -1,4 +1,4 @@
-import { requireNegocioContext } from "@/lib/supabase/context";
+import { requireContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
 import { badgeClass, statusAgendamentoTone } from "@/lib/ui/badge";
@@ -22,7 +22,7 @@ export default async function AgendamentosPage({
 }: {
   searchParams: { status?: string; data?: string };
 }) {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
   const status = searchParams.status || "";
@@ -31,7 +31,6 @@ export default async function AgendamentosPage({
   let query = supabase
     .from("agendamentos")
     .select("*")
-    .eq("negocio_id", ctx.effectiveNegocioId)
     .order("data_hora_inicio", { ascending: false });
 
   if (status) query = query.eq("status", status);

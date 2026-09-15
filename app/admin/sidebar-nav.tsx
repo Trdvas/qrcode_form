@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, CreditCard, type LucideIcon } from "lucide-react";
+import { Settings, type LucideIcon } from "lucide-react";
 
 const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/admin/negocios", label: "Painel de Negócios", icon: Building2 },
-  { href: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard },
+  { href: "/admin", label: "Configurações do negócio", icon: Settings },
 ];
 
 export default function AdminSidebarNav() {

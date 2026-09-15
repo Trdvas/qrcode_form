@@ -53,12 +53,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Resolve o perfil (role + negocio_id) do usuário logado nesta requisição
-  // e propaga via headers para Server Components/Server Actions consumirem
-  // sem precisar de uma nova consulta ao banco.
+  // Resolve o perfil (role) do usuário logado nesta requisição e propaga via
+  // headers para Server Components/Server Actions consumirem sem precisar de
+  // uma nova consulta ao banco.
   const { data: perfil } = await supabase
     .from("usuarios_perfil")
-    .select("role, negocio_id")
+    .select("role")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -74,7 +74,6 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set("x-user-id", user.id);
   requestHeaders.set("x-user-email", user.email ?? "");
   requestHeaders.set("x-user-role", perfil.role);
-  requestHeaders.set("x-negocio-id", perfil.negocio_id ?? "");
 
   response = NextResponse.next({ request: { headers: requestHeaders } });
   // Reaplica os cookies de sessão (potencialmente renovados) na resposta final.
@@ -82,27 +81,17 @@ export async function middleware(request: NextRequest) {
     response.cookies.set(cookie.name, cookie.value);
   });
 
-  // Guarda de rotas por papel.
+  // Guarda de rotas por papel: apenas admin acessa a área administrativa
+  // (configurações do negócio único). A área operacional é compartilhada
+  // por admin e operador.
   const isAdminRoute = pathname.startsWith("/admin");
-  const isAppRoute = ["/dashboard", "/produtos", "/servicos", "/agendamentos"].some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`)
-  );
 
-  if (isAdminRoute && perfil.role !== "admin_plataforma") {
+  if (isAdminRoute && perfil.role !== "admin") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (isAppRoute && perfil.role === "admin_plataforma") {
-    // Admin só acessa a área operacional em "modo suporte" (negócio selecionado).
-    const viewingNegocioId = request.cookies.get("admin_view_negocio_id")?.value;
-    if (!viewingNegocioId) {
-      return NextResponse.redirect(new URL("/admin/negocios", request.url));
-    }
-  }
-
   if (pathname === "/") {
-    const dest = perfil.role === "admin_plataforma" ? "/admin/negocios" : "/dashboard";
-    return NextResponse.redirect(new URL(dest, request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return response;

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireNegocioContext } from "@/lib/supabase/context";
+import { requireContext } from "@/lib/supabase/context";
 
 function parsePreco(valor: FormDataEntryValue | null): number {
   const n = Number(String(valor ?? "").replace(",", "."));
@@ -11,7 +11,7 @@ function parsePreco(valor: FormDataEntryValue | null): number {
 }
 
 export async function criarProduto(formData: FormData) {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
   const marca = String(formData.get("marca") || "").trim();
@@ -20,16 +20,14 @@ export async function criarProduto(formData: FormData) {
 
   if (!marca || !especificacao) throw new Error("Marca e especificação são obrigatórias.");
 
-  const { error } = await supabase
-    .from("produtos")
-    .insert({ negocio_id: ctx.effectiveNegocioId, marca, especificacao, preco_litro });
+  const { error } = await supabase.from("produtos").insert({ marca, especificacao, preco_litro });
 
   if (error) throw new Error(error.message);
   revalidatePath("/produtos");
 }
 
 export async function atualizarProduto(produtoId: string, formData: FormData) {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
   const marca = String(formData.get("marca") || "").trim();
@@ -41,22 +39,17 @@ export async function atualizarProduto(produtoId: string, formData: FormData) {
   const { error } = await supabase
     .from("produtos")
     .update({ marca, especificacao, preco_litro })
-    .eq("id", produtoId)
-    .eq("negocio_id", ctx.effectiveNegocioId);
+    .eq("id", produtoId);
 
   if (error) throw new Error(error.message);
   revalidatePath("/produtos");
 }
 
 export async function removerProduto(produtoId: string) {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
 
-  const { error } = await supabase
-    .from("produtos")
-    .delete()
-    .eq("id", produtoId)
-    .eq("negocio_id", ctx.effectiveNegocioId);
+  const { error } = await supabase.from("produtos").delete().eq("id", produtoId);
 
   if (error) throw new Error(error.message);
   revalidatePath("/produtos");

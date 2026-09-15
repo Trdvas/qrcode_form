@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Calendar, FileText, ArrowRight, Package } from "lucide-react";
-import { requireNegocioContext } from "@/lib/supabase/context";
+import { requireContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
 import { badgeClass, statusAgendamentoTone } from "@/lib/ui/badge";
@@ -17,9 +17,8 @@ function fimDoDia() {
 }
 
 export default async function DashboardPage() {
-  const ctx = await requireNegocioContext();
+  await requireContext();
   const supabase = createClient();
-  const negocioId = ctx.effectiveNegocioId;
 
   const seteDiasAtras = new Date();
   seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
@@ -27,20 +26,17 @@ export default async function DashboardPage() {
   const agendamentosHojeQuery = supabase
     .from("agendamentos")
     .select("id", { count: "exact", head: true })
-    .eq("negocio_id", negocioId)
     .gte("data_hora_inicio", inicioDoDia())
     .lte("data_hora_inicio", fimDoDia());
 
   const orcamentosRecentesQuery = supabase
     .from("orcamentos")
     .select("id", { count: "exact", head: true })
-    .eq("negocio_id", negocioId)
     .gte("data_criacao", seteDiasAtras.toISOString());
 
   const proximosAgendamentosQuery = supabase
     .from("agendamentos")
     .select("*")
-    .eq("negocio_id", negocioId)
     .eq("status", "confirmado")
     .gte("data_hora_inicio", new Date().toISOString())
     .order("data_hora_inicio", { ascending: true })
