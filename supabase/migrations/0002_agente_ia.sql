@@ -14,10 +14,17 @@ alter table negocio add column if not exists waha_session text;
 
 -- Trava de sobreposição: nenhum agendamento confirmado pode se sobrepor a
 -- outro (equivalente à exclusion constraint que existia por negocio_id).
-alter table agendamentos
-  add constraint agendamentos_sem_sobreposicao
-  exclude using gist (tstzrange(data_hora_inicio, data_hora_fim) with &&)
-  where (status = 'confirmado');
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'agendamentos_sem_sobreposicao'
+  ) then
+    alter table agendamentos
+      add constraint agendamentos_sem_sobreposicao
+      exclude using gist (tstzrange(data_hora_inicio, data_hora_fim) with &&)
+      where (status = 'confirmado');
+  end if;
+end $$;
 
 create table if not exists filtros (
   id uuid primary key default gen_random_uuid(),
