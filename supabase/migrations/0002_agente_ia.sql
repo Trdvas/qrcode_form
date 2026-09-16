@@ -39,7 +39,10 @@ create table if not exists veiculos (
   produto_oleo_id uuid references produtos (id) on delete set null,
   servico_id uuid references servicos (id) on delete set null,
   filtro_externo_id uuid references filtros (id) on delete set null,
-  filtro_interno_id uuid references filtros (id) on delete set null
+  filtro_interno_id uuid references filtros (id) on delete set null,
+  constraint veiculos_sem_duplicata unique (
+    (lower(modelo)), (lower(montadora)), ano, (lower(coalesce(motor, '')))
+  )
 );
 
 create table if not exists veiculos_motor (
@@ -53,7 +56,13 @@ create table if not exists veiculos_motor (
   produto_oleo_motor_id uuid references produtos (id) on delete set null,
   servico_motor_id uuid references servicos (id) on delete set null,
   filtro_oleo_motor_id uuid references filtros (id) on delete set null,
-  viscosidade_recomendada text
+  viscosidade_recomendada text,
+  constraint veiculos_motor_sem_sobreposicao exclude using gist (
+    lower(modelo) with =,
+    lower(montadora) with =,
+    lower(coalesce(motor_descricao, '')) with =,
+    int4range(ano_inicio, ano_fim + 1) with &&
+  )
 );
 
 create table if not exists mensagens_buffer (
