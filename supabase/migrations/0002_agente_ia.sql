@@ -39,10 +39,12 @@ create table if not exists veiculos (
   produto_oleo_id uuid references produtos (id) on delete set null,
   servico_id uuid references servicos (id) on delete set null,
   filtro_externo_id uuid references filtros (id) on delete set null,
-  filtro_interno_id uuid references filtros (id) on delete set null,
-  constraint veiculos_sem_duplicata unique (
-    (lower(modelo)), (lower(montadora)), ano, (lower(coalesce(motor, '')))
-  )
+  filtro_interno_id uuid references filtros (id) on delete set null
+);
+
+-- UNIQUE como table constraint não aceita expressões — usa índice único.
+create unique index if not exists veiculos_sem_duplicata on veiculos (
+  lower(modelo), lower(montadora), ano, lower(coalesce(motor, ''))
 );
 
 create table if not exists veiculos_motor (
