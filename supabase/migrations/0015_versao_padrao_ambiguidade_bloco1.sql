@@ -18,6 +18,10 @@
 -- "ambiguo" por enquanto, a pedido do usuário.
 -- ============================================================================
 
+-- Garante a coluna mesmo se a 0014 ainda não tiver sido rodada neste banco.
+alter table veiculos_motor
+  add column if not exists padrao_ambiguidade boolean not null default false;
+
 -- ASX (Mitsubishi): 2.0 Flex é a versão dominante; a outra opção do grupo
 -- é 2.0 gasolina puro, bem mais rara.
 update veiculos_motor
