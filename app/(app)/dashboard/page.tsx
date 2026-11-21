@@ -4,17 +4,7 @@ import { requireContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
 import { badgeClass, statusAgendamentoTone } from "@/lib/ui/badge";
-
-function inicioDoDia() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString();
-}
-function fimDoDia() {
-  const d = new Date();
-  d.setHours(23, 59, 59, 999);
-  return d.toISOString();
-}
+import { formatarDataHora, hojeLocal, limitesDoDia } from "@/lib/datas";
 
 export default async function DashboardPage() {
   await requireContext();
@@ -23,11 +13,13 @@ export default async function DashboardPage() {
   const seteDiasAtras = new Date();
   seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
 
+  const hoje = limitesDoDia(hojeLocal());
+
   const agendamentosHojeQuery = supabase
     .from("agendamentos")
     .select("id", { count: "exact", head: true })
-    .gte("data_hora_inicio", inicioDoDia())
-    .lte("data_hora_inicio", fimDoDia());
+    .gte("data_hora_inicio", hoje.inicio)
+    .lte("data_hora_inicio", hoje.fim);
 
   const orcamentosRecentesQuery = supabase
     .from("orcamentos")
@@ -106,10 +98,7 @@ export default async function DashboardPage() {
                 <div>
                   <p className="font-medium text-slate-900">{ag.veiculo || "Veículo não informado"}</p>
                   <p className="font-medium text-brand-600">
-                    {new Date(ag.data_hora_inicio).toLocaleString("pt-BR", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
+                    {formatarDataHora(ag.data_hora_inicio)}
                   </p>
                 </div>
                 <span className={badgeClass(statusAgendamentoTone(ag.status))}>{ag.status}</span>

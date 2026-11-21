@@ -2,6 +2,7 @@ import { requireContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
 import { badgeClass, statusAgendamentoTone } from "@/lib/ui/badge";
+import { formatarDataHora, limitesDoDia } from "@/lib/datas";
 
 const STATUS_FILTROS = [
   { value: "", label: "Todos" },
@@ -35,9 +36,8 @@ export default async function AgendamentosPage({
 
   if (status) query = query.eq("status", status);
   if (data) {
-    const inicio = new Date(`${data}T00:00:00`);
-    const fim = new Date(`${data}T23:59:59.999`);
-    query = query.gte("data_hora_inicio", inicio.toISOString()).lte("data_hora_inicio", fim.toISOString());
+    const { inicio, fim } = limitesDoDia(data);
+    query = query.gte("data_hora_inicio", inicio).lte("data_hora_inicio", fim);
   }
 
   const { data: agendamentos, error } = await query;
@@ -108,16 +108,10 @@ export default async function AgendamentosPage({
                   {ag.veiculo || "—"}
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-brand-600">
-                  {new Date(ag.data_hora_inicio).toLocaleString("pt-BR", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
+                  {formatarDataHora(ag.data_hora_inicio)}
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-brand-600">
-                  {new Date(ag.data_hora_fim).toLocaleString("pt-BR", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
+                  {formatarDataHora(ag.data_hora_fim)}
                 </td>
                 <td className="px-4 py-3 text-sm">
                   <span className={badgeClass(statusAgendamentoTone(ag.status))}>{ag.status}</span>
