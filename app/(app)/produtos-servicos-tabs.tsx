@@ -4,7 +4,7 @@ import Link from "next/link";
  * Navegação em formato de abas entre /produtos e /servicos. Continuam sendo
  * duas rotas independentes — isto é só o visual de "abas" pedido no design.
  */
-export default function ProdutosServicosTabs({ ativa }: { ativa: "produtos" | "servicos" }) {
+export default function ProdutosServicosTabs({ ativa }: { ativa: "produtos" | "filtros" | "servicos" }) {
   return (
     <div className="inline-flex gap-1 rounded-lg bg-slate-100 p-1">
       <Link
@@ -14,6 +14,14 @@ export default function ProdutosServicosTabs({ ativa }: { ativa: "produtos" | "s
         }`}
       >
         Produtos
+      </Link>
+      <Link
+        href="/filtros"
+        className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+          ativa === "filtros" ? "bg-white text-brand-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+        }`}
+      >
+        Filtros
       </Link>
       <Link
         href="/servicos"

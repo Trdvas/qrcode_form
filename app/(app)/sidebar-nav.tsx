@@ -21,7 +21,7 @@ const NAV_ITEMS: { href: string; label: string; icon: LucideIcon; match: (path: 
     href: "/produtos",
     label: "Produtos e Serviços",
     icon: Package,
-    match: (path) => path.startsWith("/produtos") || path.startsWith("/servicos"),
+    match: (path) => path.startsWith("/produtos") || path.startsWith("/filtros") || path.startsWith("/servicos"),
   },
 ];
 

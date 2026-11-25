@@ -29,6 +29,15 @@ export interface Produto {
   criado_em: string;
 }
 
+/** Filtro (tabela `filtros`). O preço é lido pelo bot na hora de orçar a troca de óleo. */
+export interface Filtro {
+  id: string;
+  codigo: string;
+  descricao: string | null;
+  preco: number;
+  criado_em: string;
+}
+
 export interface Servico {
   id: string;
   nome: string;
