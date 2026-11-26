@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, Package, Settings, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Calendar, Package, Settings, Tag, type LucideIcon } from "lucide-react";
 
 const NAV_ITEMS: { href: string; label: string; icon: LucideIcon; match: (path: string) => boolean }[] = [
   {
@@ -16,6 +16,12 @@ const NAV_ITEMS: { href: string; label: string; icon: LucideIcon; match: (path: 
     label: "Agendamentos",
     icon: Calendar,
     match: (path) => path.startsWith("/agendamentos"),
+  },
+  {
+    href: "/ofertas",
+    label: "Ofertas de retorno",
+    icon: Tag,
+    match: (path) => path.startsWith("/ofertas"),
   },
   {
     href: "/produtos",

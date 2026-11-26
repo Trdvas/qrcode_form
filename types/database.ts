@@ -66,6 +66,38 @@ export interface Orcamento {
   data_ultimo_contato: string | null;
 }
 
+/**
+ * Oferta de retorno enviada pelo bot no follow-up de orçamento (view `ofertas_retorno_painel`).
+ * 20% de desconto no óleo à vista ou 10% no óleo no cartão, válida ~48h.
+ * "base_*" = opção citada na mensagem; "fechou_*" = opção que o cliente fechou durante a oferta (preço já com a oferta).
+ */
+export interface OfertaRetornoPainel {
+  id: string;
+  session_id: string;
+  origem: "orcamento" | "cotacao";
+  enviado_em: string;
+  valido_ate: string;
+  ativa: boolean;
+  pct_avista: number;
+  pct_cartao: number;
+  tipo: "motor" | "cambio";
+  carro: string;
+  base_marca: string | null;
+  base_avista: number | null;
+  base_cartao: number | null;
+  base_parcelas: number | null;
+  base_parcela: number | null;
+  orcamento_id: string | null;
+  fechou_marca: string | null;
+  fechou_avista: number | null;
+  fechou_cartao: number | null;
+  fechou_parcelas: number | null;
+  fechou_parcela: number | null;
+  agendamento_id: string | null;
+  agendamento_inicio: string | null;
+  agendamento_status: string | null;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -117,7 +149,12 @@ export interface Database {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      ofertas_retorno_painel: {
+        Row: OfertaRetornoPainel;
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

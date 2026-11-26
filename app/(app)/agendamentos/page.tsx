@@ -1,8 +1,9 @@
 import { requireContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
-import type { Agendamento } from "@/types/database";
+import type { Agendamento, OfertaRetornoPainel } from "@/types/database";
 import { badgeClass, statusAgendamentoTone } from "@/lib/ui/badge";
 import { formatarDataHora, limitesDoDia } from "@/lib/datas";
+import { textoOferta } from "@/lib/ofertas";
 
 const STATUS_FILTROS = [
   { value: "", label: "Todos" },
@@ -41,6 +42,15 @@ export default async function AgendamentosPage({
   }
 
   const { data: agendamentos, error } = await query;
+
+  // Agendamentos feitos durante uma oferta de retorno: a equipe cobra o preço da oferta.
+  const ids = ((agendamentos as Agendamento[] | null) ?? []).map((a) => a.id);
+  const { data: ofertasData } = ids.length
+    ? await supabase.from("ofertas_retorno_painel").select("*").in("agendamento_id", ids)
+    : { data: [] };
+  const ofertaPorAgendamento = new Map(
+    ((ofertasData as OfertaRetornoPainel[] | null) ?? []).map((o) => [o.agendamento_id as string, o])
+  );
 
   return (
     <div className="space-y-6">
@@ -106,6 +116,13 @@ export default async function AgendamentosPage({
               <tr key={ag.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50">
                 <td className="px-4 py-3 text-sm font-medium text-slate-900">
                   {ag.veiculo || "—"}
+                  {ofertaPorAgendamento.has(ag.id) && (
+                    <p className="mt-1">
+                      <span className={badgeClass("success")}>
+                        Oferta de retorno: {textoOferta(ofertaPorAgendamento.get(ag.id)!)}
+                      </span>
+                    </p>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-brand-600">
                   {formatarDataHora(ag.data_hora_inicio)}

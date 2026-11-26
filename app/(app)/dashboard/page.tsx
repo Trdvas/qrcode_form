@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar, FileText, ArrowRight, Package } from "lucide-react";
+import { Calendar, FileText, ArrowRight, Package, Tag } from "lucide-react";
 import { requireContext } from "@/lib/supabase/context";
 import { createClient } from "@/lib/supabase/server";
 import type { Agendamento } from "@/types/database";
@@ -34,9 +34,15 @@ export default async function DashboardPage() {
     .order("data_hora_inicio", { ascending: true })
     .limit(5);
 
-  const [{ count: agendamentosHoje }, { count: orcamentosRecentes }] = await Promise.all([
+  const ofertasAtivasQuery = supabase
+    .from("ofertas_retorno_painel")
+    .select("id", { count: "exact", head: true })
+    .eq("ativa", true);
+
+  const [{ count: agendamentosHoje }, { count: orcamentosRecentes }, { count: ofertasAtivas }] = await Promise.all([
     agendamentosHojeQuery,
     orcamentosRecentesQuery,
+    ofertasAtivasQuery,
   ]);
   const { data: proximosAgendamentosData } = await proximosAgendamentosQuery;
   const proximosAgendamentos = proximosAgendamentosData as Agendamento[] | null;
@@ -48,7 +54,7 @@ export default async function DashboardPage() {
         <p className="text-sm text-slate-500">Resumo da operação de hoje</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="card flex items-start justify-between bg-brand-50 p-5">
           <div>
             <p className="text-sm text-slate-500">Agendamentos hoje</p>
@@ -67,6 +73,15 @@ export default async function DashboardPage() {
             <FileText className="h-5 w-5" strokeWidth={2} />
           </span>
         </div>
+        <Link href="/ofertas" className="card flex items-start justify-between bg-amber-50 p-5 hover:bg-amber-100">
+          <div>
+            <p className="text-sm text-slate-500">Ofertas de retorno ativas</p>
+            <p className="mt-2 text-3xl font-bold text-amber-600">{ofertasAtivas ?? 0}</p>
+          </div>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-amber-600">
+            <Tag className="h-5 w-5" strokeWidth={2} />
+          </span>
+        </Link>
       </div>
 
       <Link
